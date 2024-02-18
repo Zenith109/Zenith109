@@ -1,24 +1,17 @@
 Console.Title = "Veraibles"
-import os, sys
-sys.path.append(os.getcwd()) # Adds the current directory to the system path for module import access
-from veraibles_core import VeraiblesCore
+char letter;   letter = 'A'; // Declared and Initialized
+int number;  number = 100; //Declared  and Initialized\
+float body = 98.6f; //Declared and  Initialized with float data type
+double pi = 3.14159; //Declared  and Initialized with double data type
+decimal sum = 1000.0m; //Declared  and Initialized with decimal data type
+bool flag = false; //Decleared  and Initialized with Boolean Data Type
+string text = "C# is Fun"; //Declraed  and Initialized with String Data Type
 
-# Create an instance of the VeraiblesCore class with default settings
-vc = VeraiblesCore()
-
-def main():
-    """Main function that handles user input and runs appropriate methods in vc"""
-    
-    while True:  # Main loop for program execution
-        print("\n")
-        
-        # Get user command from input
-        cmd = input("> ")
-        
-        if cmd == 'exit':   # Exit command
-            break          # End the loop and close the program
-            
-        elif cmd == 'help':  # Help command
-            vc.printHelp()  # Print help message
-            
-        else:               # If no valid commands are entered  
+Console.WriteLine("char letter:\t" + letter);
+Console.WriteLine("int number:\t" + number);
+Console.WriteLine("float body:\t"+ body);
+Console.WriteLine("double pi:\t" + pi);
+Console.WriteLine("decimal sum:\t" + sum);
+Console.WriteLine("bool flag:\t" + flag);
+Console.WriteLine("string  text:\t" + text);
+Console.ReadKey()
