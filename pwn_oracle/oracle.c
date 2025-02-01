@@ -3,10 +3,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
+#include <unistd.h>       // for close()
+#include <sys/types.h>    // for data types used in sys/socket.h and netinet/in.h
+#include <sys/socket.h>   // for socket functions
+#include <netinet/in.h>   // for sockaddr_in structure
 
 #define PORT                    9001
 #define MAX_START_LINE_SIZE     1024
@@ -44,8 +44,8 @@ void parse_headers();
 char *get_header();
 int is_competitor();
 
-
 int main() {
+    // Create a socket
     int server_socket = socket(AF_INET, SOCK_STREAM, 0);
 
     if (server_socket == -1) {
@@ -76,6 +76,7 @@ int main() {
     printf("Oracle listening on port %d\n", PORT);
 
     while(1) {
+        // Accept incoming connections
         client_socket = accept(server_socket, NULL, NULL);
 
         puts("Received a spiritual connection...");
@@ -85,6 +86,7 @@ int main() {
             continue;
         }
 
+        // Handle the request
         handle_request();
     }
 
@@ -92,8 +94,8 @@ int main() {
 }
 
 void handle_request() {
-    // take in the start-line of the request
-    // contains the action, the target competitor and the oracle version
+    // Take in the start-line of the request
+    // Contains the action, the target competitor and the oracle version
     char start_line[MAX_START_LINE_SIZE];
 
     char byteRead;
@@ -110,10 +112,11 @@ void handle_request() {
         start_line[i] = byteRead;
     }
 
+    // Parse the start line
     sscanf(start_line, "%7s %31s %15s", action, target_competitor, version);
     parse_headers();
 
-    // handle the specific action desired
+    // Handle the specific action desired
     if (!strcmp(action, VIEW)) {
         handle_view();
     } else if (!strcmp(action, PLAGUE)) {
@@ -123,7 +126,7 @@ void handle_request() {
         write(client_socket, BAD_REQUEST, strlen(BAD_REQUEST));
     }
 
-    // clear all request-specific values for next request
+    // Clear all request-specific values for next request
     memset(action, 0, 8);
     memset(target_competitor, 0, 32);
     memset(version, 0, 16);
@@ -131,6 +134,7 @@ void handle_request() {
 }
 
 void handle_view() {
+    // Handle the VIEW action
     if (!strcmp(target_competitor, "me")) {
         write(client_socket, "You have found yourself.\n", 25);
     } else if (!is_competitor(target_competitor)) {
@@ -141,12 +145,13 @@ void handle_view() {
 }
 
 void handle_plague() {
+    // Handle the PLAGUE action
     if(!get_header("Content-Length")) {
         write(client_socket, CONTENT_LENGTH_NEEDED, strlen(CONTENT_LENGTH_NEEDED));
         return;
     }
 
-    // take in the data
+    // Take in the data
     char *plague_content = (char *)malloc(MAX_PLAGUE_CONTENT_SIZE);
     char *plague_target = (char *)0x0;
 
@@ -186,7 +191,7 @@ void handle_plague() {
 }
 
 void parse_headers() {
-    // first input all of the header fields
+    // First input all of the header fields
     ssize_t i = 0;
     char byteRead;
     char header_buffer[MAX_HEADER_DATA_SIZE];
@@ -194,7 +199,7 @@ void parse_headers() {
     while (1) {
         recv(client_socket, &byteRead, sizeof(byteRead), 0);
 
-        // clean up the headers by removing extraneous newlines
+        // Clean up the headers by removing extraneous newlines
         if (!(byteRead == '\n' && header_buffer[i-1] != '\r'))
             header_buffer[i] = byteRead;
 
@@ -206,7 +211,7 @@ void parse_headers() {
         i++;
     }
 
-    // now parse the headers
+    // Now parse the headers
     const char *delim = "\r\n";
     char *line = strtok(header_buffer, delim);
 
@@ -229,7 +234,7 @@ void parse_headers() {
 }
 
 char *get_header(char *header_name) {
-    // return the value for a specific header key
+    // Return the value for a specific header key
     for (ssize_t i = 0; i < MAX_HEADERS; i++) {
         if(!strcmp(headers[i].key, header_name)) {
             return headers[i].value;
@@ -240,7 +245,7 @@ char *get_header(char *header_name) {
 }
 
 int is_competitor(char *name) {
-    // don't want the user of the Oracle to be able to plague Overlords!
+    // Don't want the user of the Oracle to be able to plague Overlords!
     if (!strncmp(name, "Overlord", 8))
         return 0;
     
